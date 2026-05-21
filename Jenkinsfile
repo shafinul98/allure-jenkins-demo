@@ -24,7 +24,7 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                bat 'npm install'
             }
         }
 
@@ -35,14 +35,14 @@ pipeline {
                     echo "Using Allure Report Tag Name: ${ALLURE_REPORT_TAG_NAME}"
                   }
                 }
-                sh 'npx wdio run ./wdio.conf.js'
+                bat 'npx wdio run ./wdio.conf.js'
             }
         }
 
         stage('Generate Allure Report') {
             steps {
-                sh 'npm run allure:generate'
-                sh 'npm run allure:open'
+                bat 'npm run allure:generate'
+                bat 'npm run allure:open'
             }
         }
     }
