@@ -1,4 +1,4 @@
-const { After } = require('@cucumber/cucumber');
+import { After } from '@cucumber/cucumber';
 
 After(async function (scenario) {
 
