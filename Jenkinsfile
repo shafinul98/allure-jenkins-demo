@@ -14,8 +14,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/shafinul98/allure-jenkins-demo.git'
+                checkout scm
             }
         }
 
