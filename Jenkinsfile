@@ -39,11 +39,11 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                  withEnv([ALLURE_REPORT_TAG_NAME: params.ALLURE_REPORT_TAG_NAME]) {
-                    echo "Using Allure Report Tag Name: ${ALLURE_REPORT_TAG_NAME}"
-                  }
+                    withEnv(["ALLURE_REPORT_TAG_NAME=${params.ALLURE_REPORT_TAG_NAME}"]) {
+                        echo "Using Allure Report Tag Name: ${env.ALLURE_REPORT_TAG_NAME}"
+                        bat 'npx wdio run ./wdio.conf.js'
+                    }
                 }
-                bat 'npx wdio run ./wdio.conf.js'
             }
         }
 
