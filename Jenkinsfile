@@ -33,6 +33,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 bat 'npm install'
+                bat 'npm install -D allure-commandline'
             }
         }
 
@@ -49,8 +50,7 @@ pipeline {
 
         stage('Generate Allure Report') {
             steps {
-                bat 'npm run allure:generate'
-                bat 'npm run allure:open'
+                bat 'npx allure generate allure-results --clean -o allure-report'
             }
         }
     }
