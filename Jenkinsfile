@@ -22,6 +22,14 @@ pipeline {
             }
         }
 
+        stage('Debug Environment') {
+            steps {
+                bat 'echo NODE PATH && where node'
+                bat 'node -v'
+                bat 'npm -v'
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 bat 'npm install'
