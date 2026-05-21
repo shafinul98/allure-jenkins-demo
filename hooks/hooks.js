@@ -1,4 +1,12 @@
-import { After } from '@cucumber/cucumber';
+import { After, Before } from '@cucumber/cucumber';
+import AllureReporter from '@wdio/allure-reporter';
+
+Before(async function () {
+    const tagValueToUse = process.env.ALLURE_REPORT_TAG_NAME;
+    if (tagValueToUse) {
+        AllureReporter.addTag(tagValueToUse);
+    }
+});
 
 After(async function (scenario) {
 

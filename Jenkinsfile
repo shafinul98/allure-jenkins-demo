@@ -1,8 +1,12 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: "Allure Report Tag Name", description: "Enter a tag name for the Allure Report", defaultValue: "Owner")
+    }
+
     tools {
-        nodejs 'NodeJS' // Name configured in Jenkins Global Tool Configuration
+        nodejs 'NodeJS'
     }
 
     environment {
@@ -26,6 +30,11 @@ pipeline {
 
         stage('Run Tests') {
             steps {
+                script {
+                  withEnv([ALLURE_REPORT_TAG_NAME: params.ALLURE_REPORT_TAG_NAME]) {
+                    echo "Using Allure Report Tag Name: ${ALLURE_REPORT_TAG_NAME}"
+                  }
+                }
                 sh 'npx wdio run ./wdio.conf.js'
             }
         }
@@ -33,6 +42,7 @@ pipeline {
         stage('Generate Allure Report') {
             steps {
                 sh 'npm run allure:generate'
+                sh 'npm run allure:open'
             }
         }
     }
