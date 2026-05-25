@@ -34,7 +34,6 @@ pipeline {
             steps {
                 bat 'npm install'
                 bat 'npm install -D allure-commandline'
-                bat 'npm install chromedriver@latest'
             }
         }
 
