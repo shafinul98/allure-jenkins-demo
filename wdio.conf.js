@@ -56,8 +56,6 @@ export const config = {
         }
     }],
 
-    services: ['selenium-standalone'],
-
     //
     // ===================
     // Test Configurations
