@@ -56,11 +56,7 @@ export const config = {
         }
     }],
 
-    services: [
-      ['chromedriver', {
-        chromedriverCustomPath: './node_modules/chromedriver/lib/chromedriver/chromedriver.exe'
-      }]
-    ],
+    services: ['selenium-standalone'],
 
     //
     // ===================
