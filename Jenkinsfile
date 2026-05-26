@@ -66,6 +66,11 @@ pipeline {
                 bat 'npm ci'
 
                 bat 'npm install -D allure-commandline'
+
+                bat '''
+                  mkdir %WORKSPACE%\\tmp
+                  mkdir %WORKSPACE%\\wdio-cache
+                '''
             }
         }
 
@@ -75,7 +80,8 @@ pipeline {
                     withEnv([
                           "ALLURE_REPORT_TAG_NAME=${params['Allure Report Tag Name']}",
                           "TEMP=${env.WORKSPACE}\\tmp",
-                          "TMP=${env.WORKSPACE}\\tmp"
+                          "TMP=${env.WORKSPACE}\\tmp",
+                          "WDIO_CACHE_DIR=${env.WORKSPACE}\\wdio-cache"
                         ]) {
 
                         echo "Using Allure Report Tag Name: ${env.ALLURE_REPORT_TAG_NAME}"
