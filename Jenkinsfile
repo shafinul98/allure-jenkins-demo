@@ -63,7 +63,7 @@ pipeline {
                 bat 'npm cache clean --force'
 
                 // Clean install is safer on Jenkins
-                bat 'npm ci || npm install'
+                bat 'npm ci'
 
                 bat 'npm install -D allure-commandline'
             }
@@ -72,7 +72,11 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    withEnv(["ALLURE_REPORT_TAG_NAME=${params['Allure Report Tag Name']}"]) {
+                    withEnv([
+                          "ALLURE_REPORT_TAG_NAME=${params['Allure Report Tag Name']}",
+                          "TEMP=${env.WORKSPACE}\\tmp",
+                          "TMP=${env.WORKSPACE}\\tmp"
+                        ]) {
 
                         echo "Using Allure Report Tag Name: ${env.ALLURE_REPORT_TAG_NAME}"
 
