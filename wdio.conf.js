@@ -56,6 +56,12 @@ export const config = {
         }
     }],
 
+    services: [
+      ['chromedriver', {
+        chromedriverCustomPath: './node_modules/chromedriver/lib/chromedriver/chromedriver.exe'
+      }]
+    ],
+
     //
     // ===================
     // Test Configurations
