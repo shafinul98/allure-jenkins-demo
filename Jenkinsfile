@@ -85,7 +85,7 @@ pipeline {
                         set TEMP=%WORKSPACE%\\tmp
                         set TMP=%WORKSPACE%\\tmp
 
-                        npx wdio run ./wdio.conf.js
+                        npx wdio run ./wdio.conf.js --logLevel debug
                         '''
                     }
                 }
