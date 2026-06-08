@@ -69,7 +69,6 @@ pipeline {
 
                 bat '''
                   mkdir %WORKSPACE%\\tmp
-                  mkdir %WORKSPACE%\\wdio-cache
                 '''
             }
         }
