@@ -103,14 +103,19 @@ pipeline {
     post {
 
         always {
-
-            archiveArtifacts artifacts: 'allure-report/**/*.*', allowEmptyArchive: true
-
             allure([
                 includeProperties: false,
                 jdk: '',
                 results: [[path: 'allure-results']]
             ])
+            archiveArtifacts artifacts: 'allure-report.zip', allowEmptyArchive: true
+            emailext(
+                to: 'shafinul98@gmail.com',
+                subject: 'Allure Report for build ${env.BUILD_NUMBER}',
+                body: 'Please find attached the allure report for the build ${env.BUILD_NUMBER}',
+                attachmentsPattern: 'allure-report.zip',
+                attachLog: true,
+            )
         }
 
         success {

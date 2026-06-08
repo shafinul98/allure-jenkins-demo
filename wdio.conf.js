@@ -1,3 +1,5 @@
+import chromedriver from 'chromedriver';
+
 export const config = {
     //
     // ====================
@@ -52,7 +54,7 @@ export const config = {
     capabilities: [{
         browserName: 'chrome',
         'wdio:chromedriverOptions': {
-            binary: require('chromedriver').path, 
+            binary: chromedriver.path, 
         },
         'goog:chromeOptions': {
             args: ['--headless', '--disable-gpu', '--window-size=1920,1080']
