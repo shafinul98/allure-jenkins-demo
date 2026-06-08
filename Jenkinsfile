@@ -66,10 +66,6 @@ pipeline {
                 bat 'npm ci'
 
                 bat 'npm install -D allure-commandline'
-
-                bat '''
-                  mkdir %WORKSPACE%\\tmp
-                '''
             }
         }
 
