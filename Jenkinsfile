@@ -120,7 +120,14 @@ pipeline {
                 emailext(
                     to: 'shafinul98@gmail.com',
                     subject: "Allure Report for build ${env.BUILD_NUMBER}",
-                    body: "Please find attached the allure report for the build ${env.BUILD_NUMBER}",
+                    body: """<html>
+                        <body>
+                            <p>Build ${env.BUILD_NUMBER} completed.</p>
+                            <p>Allure Report: <a href="${env.BUILD_URL}allure/">${env.BUILD_URL}allure/</a></p>
+                            <p>Please find the detailed report attached.</p>
+                        </body>
+                    </html>""",
+                    mimeType: 'text/html',
                     attachmentsPattern: 'allure-report.zip',
                     attachLog: true,
                 )
