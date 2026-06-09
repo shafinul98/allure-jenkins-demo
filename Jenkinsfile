@@ -60,12 +60,8 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                bat 'npm cache clean --force'
-
                 // Clean install is safer on Jenkins
                 bat 'npm ci'
-
-                bat 'npm install -D allure-commandline'
             }
         }
 
@@ -83,9 +79,6 @@ pipeline {
 
                         // Force webdriver/chromedriver to use workspace temp
                         bat '''
-                        set TEMP=%WORKSPACE%\\tmp
-                        set TMP=%WORKSPACE%\\tmp
-
                         npx wdio run ./wdio.conf.js --logLevel debug
                         '''
                     }
@@ -110,8 +103,8 @@ pipeline {
             ])
 
             def workspacePath = pwd()
-            def reportFolder = ${workspacePath}\\allure-report
-            def zipFile = ${workspacePath}\\allure-report.zip
+            def reportFolder = "${workspacePath}\\allure-report"
+            def zipFile = "${workspacePath}\\allure-report.zip"
 
             if (fileExists(reportFolder)) {
                 powershell """
@@ -125,8 +118,8 @@ pipeline {
 
             emailext(
                 to: 'shafinul98@gmail.com',
-                subject: 'Allure Report for build ${env.BUILD_NUMBER}',
-                body: 'Please find attached the allure report for the build ${env.BUILD_NUMBER}',
+                subject: "Allure Report for build ${env.BUILD_NUMBER}",
+                body: "Please find attached the allure report for the build ${env.BUILD_NUMBER}",
                 attachmentsPattern: 'allure-report.zip',
                 attachLog: true,
             )
