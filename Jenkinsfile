@@ -108,7 +108,21 @@ pipeline {
                 jdk: '',
                 results: [[path: 'allure-results']]
             ])
-            archiveArtifacts artifacts: 'allure-report.zip', allowEmptyArchive: true
+
+            def workspacePath = pwd()
+            def reportFolder = ${workspacePath}\\allure-report
+            def zipFile = ${workspacePath}\\allure-report.zip
+
+            if (fileExists(reportFolder)) {
+                powershell """
+                  if (Test-Path "${zipFile}") {
+                    Remove-Item "${zipFile}" -Force
+                  }
+                  Compress-Archive -Path "${reportFolder}" -DestinationPath "${zipFile}" -Force
+                """
+                archiveArtifacts artifacts: 'allure-report.zip', allowEmptyArchive: false
+            }
+
             emailext(
                 to: 'shafinul98@gmail.com',
                 subject: 'Allure Report for build ${env.BUILD_NUMBER}',
