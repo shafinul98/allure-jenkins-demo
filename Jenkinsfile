@@ -90,10 +90,15 @@ pipeline {
     post {
 
         always {
+            // Generate Allure report from results
+            bat 'npx allure generate allure-results --clean -o allure-report'
+
             allure([
                 includeProperties: false,
                 jdk: '',
-                results: [[path: 'allure-results']]
+                reportBuildPolicy: 'ALWAYS',
+                results: [[path: 'allure-results']],
+                reportPath: 'allure-report'
             ])
 
             script {
