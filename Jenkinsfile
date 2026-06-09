@@ -102,27 +102,29 @@ pipeline {
                 results: [[path: 'allure-results']]
             ])
 
-            def workspacePath = pwd()
-            def reportFolder = "${workspacePath}\\allure-report"
-            def zipFile = "${workspacePath}\\allure-report.zip"
+            script {
+                def workspacePath = pwd()
+                def reportFolder = "${workspacePath}\\allure-report"
+                def zipFile = "${workspacePath}\\allure-report.zip"
 
-            if (fileExists(reportFolder)) {
-                powershell """
-                  if (Test-Path "${zipFile}") {
-                    Remove-Item "${zipFile}" -Force
-                  }
-                  Compress-Archive -Path "${reportFolder}" -DestinationPath "${zipFile}" -Force
-                """
-                archiveArtifacts artifacts: 'allure-report.zip', allowEmptyArchive: false
+                if (fileExists(reportFolder)) {
+                    powershell """
+                      if (Test-Path "${zipFile}") {
+                        Remove-Item "${zipFile}" -Force
+                      }
+                      Compress-Archive -Path "${reportFolder}" -DestinationPath "${zipFile}" -Force
+                    """
+                    archiveArtifacts artifacts: 'allure-report.zip', allowEmptyArchive: false
+                }
+
+                emailext(
+                    to: 'shafinul98@gmail.com',
+                    subject: "Allure Report for build ${env.BUILD_NUMBER}",
+                    body: "Please find attached the allure report for the build ${env.BUILD_NUMBER}",
+                    attachmentsPattern: 'allure-report.zip',
+                    attachLog: true,
+                )
             }
-
-            emailext(
-                to: 'shafinul98@gmail.com',
-                subject: "Allure Report for build ${env.BUILD_NUMBER}",
-                body: "Please find attached the allure report for the build ${env.BUILD_NUMBER}",
-                attachmentsPattern: 'allure-report.zip',
-                attachLog: true,
-            )
         }
 
         success {
