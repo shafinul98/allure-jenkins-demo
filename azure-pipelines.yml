@@ -46,3 +46,45 @@ stages:
           inputs:
             targetPath: $(Build.SourcesDirectory)/$(ALLURE_REPORT_DIR)
             artifact: allure-report
+
+- stage: SendEmailNotification
+  displayName: "Sending email to user with allure report as attachment"
+
+  jobs:
+    - job: SendEmail
+
+      pool:
+        vmImage: ubuntu-latest
+
+      steps:
+        - checkout: self
+          clean: true
+      
+        - script: | 
+            set -e
+
+            ZIP_PATH="$(Build.ArtifactStagingDirectory/allure-report.zip)"
+
+            cd "$(Build.SourcesDirectory)/$(ALLURE_REPORT_DIR)"
+            zip -r $ZIP_PATH .
+
+            ENCODED=$(base64 "$ZIP_PATH" | tr -d '\n')
+
+            curl -X POST "https://api.resend.com/emails" \
+              -H "Authorization: Bearer $RESEND_EMAIL_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"from"\: \"onboarding@resend.dev\",
+                \"to"\: \"s4.islam@a1qa.com\",
+                \"subject"\: \"Allure Report\",
+                \"html"\: \"<p>Attached is the latest build Allure Report.</p>\",
+                \"attachments"\: [{
+                  "\filename\": \"allure-report.zip\",
+                  "\content\": \"${ENCODED}\",
+                  "\type\": \"application/zip\",
+                }]
+              }"
+          displayName: "Send Allure Report via Resend"    
+          env:
+            RESEND_EMAIL_API_KEY: $(RESEND_EMAIL_API_KEY)
+            
