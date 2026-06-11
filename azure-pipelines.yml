@@ -1,19 +1,99 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
-- main
+  branches:
+    include:
+      - main
 
-pool:
-  vmImage: ubuntu-latest
+variables:
+  NODE_VERSION: '20.x'
+  ALLURE_REPORT_DIR: 'allure-report'
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+stages:
+- stage: TestExecution
+  displayName: Execute WDIO Tests
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+  jobs:
+    - job: RunTests
+
+      pool:
+        vmImage: ubuntu-latest
+
+      steps:
+        - checkout: self
+          clean: true
+
+        - task: NodeTool@0
+          displayName: Install Node.js
+          inputs:
+            versionSpec: $(NODE_VERSION)
+
+        - script: npm ci
+          displayName: Install Dependencies
+
+        - script: |
+            npx wdio run wdio.conf.js
+          displayName: Run WDIO Tests
+
+        - script: |
+            npx allure generate allure-results \
+              --clean \
+              -o $(ALLURE_REPORT_DIR)
+          displayName: Generate Allure Report
+          condition: always()
+
+        - task: PublishPipelineArtifact@1
+          displayName: Publish Allure Report
+          condition: always()
+          inputs:
+            targetPath: $(Build.SourcesDirectory)/$(ALLURE_REPORT_DIR)
+            artifact: allure-report
+
+- stage: Notify
+  dependsOn: TestExecution
+  condition: always()
+
+  jobs:
+    - job: SendReport
+
+      pool:
+        vmImage: ubuntu-latest
+
+      steps:
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            artifact: allure-report
+            path: $(Pipeline.Workspace)/allure-report
+
+        - task: ArchiveFiles@2
+          inputs:
+            rootFolderOrFile: $(Pipeline.Workspace)/allure-report
+            includeRootFolder: false
+            archiveType: zip
+            archiveFile: $(Build.ArtifactStagingDirectory)/allure-report.zip
+            replaceExistingArchive: true
+
+        - task: PowerShell@2
+          displayName: Send Email
+          inputs:
+            targetType: inline
+            script: |
+              $smtpServer = "$(SMTP_SERVER)"
+              $smtpPort = "$(SMTP_PORT)"
+              $username = "$(SMTP_USERNAME)"
+              $password = "$(SMTP_PASSWORD)"
+
+              $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
+              $credential = New-Object System.Management.Automation.PSCredential($username, $securePassword)
+
+              $mailParams = @{
+                From       = $username
+                To         = "$(EMAIL_TO)"
+                Subject    = "WDIO Results - $(Build.BuildNumber)"
+                Body       = "Test execution completed. Allure report attached."
+                SmtpServer = $smtpServer
+                Port       = $smtpPort
+                UseSsl     = $true
+                Credential = $credential
+                Attachments = "$(Build.ArtifactStagingDirectory)/allure-report.zip"
+              }
+
+              Send-MailMessage @mailParams
