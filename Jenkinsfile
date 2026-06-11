@@ -94,7 +94,7 @@ pipeline {
             bat 'npx allure generate allure-results --clean -o allure-report'
 
             // Archive the generated report
-            archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: false
+            archiveArtifacts artifacts: 'allure-report/**', allowEmptyArchive: true
 
             script {
                 def workspacePath = pwd()

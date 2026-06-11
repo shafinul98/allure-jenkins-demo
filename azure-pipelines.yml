@@ -63,14 +63,14 @@ stages:
         - task: DownloadPipelineArtifact@2
           inputs:
             artifact: allure-report
-            path: $(Pipeline.Workspace)/allure-report
+            path: $(Pipeline.Workspace)/download
 
         - script: | 
             set -e
 
             ZIP_PATH="$(Build.ArtifactStagingDirectory)/allure-report.zip"
 
-            cd "$(Pipeline.Workspace)/$(ALLURE_REPORT_DIR)"
+            cd "$(Pipeline.Workspace)/download/allure-report"
             zip -r $ZIP_PATH .
 
             ENCODED=$(base64 "$ZIP_PATH" | tr -d '\n')
@@ -85,7 +85,7 @@ stages:
                 \"html\": \"<p>Attached is the latest build Allure Report.</p>\",
                 \"attachments\": [{
                   \"filename\": \"allure-report.zip\",
-                  \"content\": \"${ENCODED}\",
+                  \"content\": \"$ENCODED\",
                   \"type\": \"application/zip\"
                 }]
               }"
