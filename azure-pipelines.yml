@@ -63,7 +63,7 @@ stages:
         - script: | 
             set -e
 
-            ZIP_PATH="$(Build.ArtifactStagingDirectory/allure-report.zip)"
+            ZIP_PATH="$(Build.ArtifactStagingDirectory)/allure-report.zip"
 
             cd "$(Build.SourcesDirectory)/$(ALLURE_REPORT_DIR)"
             zip -r $ZIP_PATH .
