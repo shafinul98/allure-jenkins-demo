@@ -69,25 +69,23 @@ stages:
             set -e
 
             ZIP_PATH="$(Build.ArtifactStagingDirectory)/allure-report.zip"
+            DOWNLOAD_DIR="$(Pipeline.Workspace)/download"
 
-            # Debug: List downloaded artifacts
-            echo "Listing contents of $(Pipeline.Workspace)/download:"
-            ls -la "$(Pipeline.Workspace)/download" || echo "Download directory not found"
-
-            # Find and navigate to allure-report directory
-            REPORT_DIR=$(find "$(Pipeline.Workspace)/download" -type d -name "allure-report" | head -1)
+            # The artifact is published as its contents, not as a directory
+            # So the report files are directly in the download path
+            cd "$DOWNLOAD_DIR"
             
-            if [ -z "$REPORT_DIR" ]; then
-              echo "ERROR: Allure report directory not found in $(Pipeline.Workspace)/download"
-              echo "Full directory tree:"
-              find "$(Pipeline.Workspace)/download" -type f | head -20
+            # Verify we have the expected allure report files
+            if [ ! -f "index.html" ]; then
+              echo "ERROR: index.html not found in $DOWNLOAD_DIR"
+              ls -la "$DOWNLOAD_DIR"
               exit 1
             fi
 
-            echo "Found report at: $REPORT_DIR"
-            cd "$REPORT_DIR"
+            echo "Creating zip from allure report files..."
             zip -r $ZIP_PATH .
 
+            echo "Encoding zip file for email attachment..."
             ENCODED=$(base64 "$ZIP_PATH" | tr -d '\n')
 
             cat > /tmp/email-payload.json <<EOF
@@ -104,6 +102,7 @@ stages:
             }
             EOF
 
+            echo "Sending email with report attachment..."
             curl -X POST "https://api.resend.com/emails" \
               -H "Authorization: Bearer $RESEND_EMAIL_API_KEY" \
               -H "Content-Type: application/json" \
