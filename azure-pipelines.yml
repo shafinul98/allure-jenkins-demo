@@ -60,20 +60,17 @@ stages:
         - checkout: self
           clean: true
 
-        - script: |
-            echo "Listing sources directory:"
-            ls -R $(Build.SourcesDirectory)
-
-            echo "Checking expected report path:"
-            ls -R $(Build.SourcesDirectory)/$(ALLURE_REPORT_DIR) || true
-            displayName: "Debug Allure paths"
+        - task: DownloadPipelineArtifact@2
+            inputs:
+            artifact: allure-report
+            path: $(Pipeline.Workspace)/allure-report
 
         - script: | 
             set -e
 
             ZIP_PATH="$(Build.ArtifactStagingDirectory)/allure-report.zip"
 
-            cd "$(Build.SourcesDirectory)/$(ALLURE_REPORT_DIR)"
+            cd "$(Pipeline.Workspace)/$(ALLURE_REPORT_DIR)"
             zip -r $ZIP_PATH .
 
             ENCODED=$(base64 "$ZIP_PATH" | tr -d '\n')
@@ -82,14 +79,14 @@ stages:
               -H "Authorization: Bearer $RESEND_EMAIL_API_KEY" \
               -H "Content-Type: application/json" \
               -d "{
-                \"from"\: \"onboarding@resend.dev\",
+                \"from\": \"onboarding@resend.dev\",
                 \"to"\: \"s4.islam@a1qa.com\",
                 \"subject"\: \"Allure Report\",
                 \"html"\: \"<p>Attached is the latest build Allure Report.</p>\",
                 \"attachments"\: [{
-                  "\filename\": \"allure-report.zip\",
-                  "\content\": \"${ENCODED}\",
-                  "\type\": \"application/zip\",
+                  \"filename\": \"allure-report.zip\",
+                  \"content\": \"${ENCODED}\",
+                  \"type\": \"application/zip\"
                 }]
               }"
           displayName: "Send Allure Report via Resend"    
