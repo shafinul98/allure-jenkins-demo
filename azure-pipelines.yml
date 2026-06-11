@@ -75,20 +75,24 @@ stages:
 
             ENCODED=$(base64 "$ZIP_PATH" | tr -d '\n')
 
+            cat > /tmp/email-payload.json <<EOF
+            {
+              "from": "onboarding@resend.dev",
+              "to": "s4.islam@a1qa.com",
+              "subject": "Allure Report",
+              "html": "<p>Attached is the latest build Allure Report.</p>",
+              "attachments": [{
+                "filename": "allure-report.zip",
+                "content": "$ENCODED",
+                "type": "application/zip"
+              }]
+            }
+            EOF
+
             curl -X POST "https://api.resend.com/emails" \
               -H "Authorization: Bearer $RESEND_EMAIL_API_KEY" \
               -H "Content-Type: application/json" \
-              -d "{
-                \"from\": \"onboarding@resend.dev\",
-                \"to\": \"s4.islam@a1qa.com\",
-                \"subject\": \"Allure Report\",
-                \"html\": \"<p>Attached is the latest build Allure Report.</p>\",
-                \"attachments\": [{
-                  \"filename\": \"allure-report.zip\",
-                  \"content\": \"$ENCODED\",
-                  \"type\": \"application/zip\"
-                }]
-              }"
+              -d @/tmp/email-payload.json
           displayName: "Send Allure Report via Resend"    
           env:
             RESEND_EMAIL_API_KEY: $(RESEND_EMAIL_API_KEY)
