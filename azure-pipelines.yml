@@ -70,7 +70,22 @@ stages:
 
             ZIP_PATH="$(Build.ArtifactStagingDirectory)/allure-report.zip"
 
-            cd "$(Pipeline.Workspace)/download/allure-report"
+            # Debug: List downloaded artifacts
+            echo "Listing contents of $(Pipeline.Workspace)/download:"
+            ls -la "$(Pipeline.Workspace)/download" || echo "Download directory not found"
+
+            # Find and navigate to allure-report directory
+            REPORT_DIR=$(find "$(Pipeline.Workspace)/download" -type d -name "allure-report" | head -1)
+            
+            if [ -z "$REPORT_DIR" ]; then
+              echo "ERROR: Allure report directory not found in $(Pipeline.Workspace)/download"
+              echo "Full directory tree:"
+              find "$(Pipeline.Workspace)/download" -type f | head -20
+              exit 1
+            fi
+
+            echo "Found report at: $REPORT_DIR"
+            cd "$REPORT_DIR"
             zip -r $ZIP_PATH .
 
             ENCODED=$(base64 "$ZIP_PATH" | tr -d '\n')
