@@ -80,10 +80,10 @@ stages:
               -H "Content-Type: application/json" \
               -d "{
                 \"from\": \"onboarding@resend.dev\",
-                \"to"\: \"s4.islam@a1qa.com\",
-                \"subject"\: \"Allure Report\",
-                \"html"\: \"<p>Attached is the latest build Allure Report.</p>\",
-                \"attachments"\: [{
+                \"to\": \"s4.islam@a1qa.com\",
+                \"subject\": \"Allure Report\",
+                \"html\": \"<p>Attached is the latest build Allure Report.</p>\",
+                \"attachments\": [{
                   \"filename\": \"allure-report.zip\",
                   \"content\": \"${ENCODED}\",
                   \"type\": \"application/zip\"
@@ -92,4 +92,3 @@ stages:
           displayName: "Send Allure Report via Resend"    
           env:
             RESEND_EMAIL_API_KEY: $(RESEND_EMAIL_API_KEY)
-            
