@@ -59,7 +59,15 @@ stages:
       steps:
         - checkout: self
           clean: true
-      
+
+        - script: |
+            echo "Listing sources directory:"
+            ls -R $(Build.SourcesDirectory)
+
+            echo "Checking expected report path:"
+            ls -R $(Build.SourcesDirectory)/$(ALLURE_REPORT_DIR) || true
+            displayName: "Debug Allure paths"
+
         - script: | 
             set -e
 
