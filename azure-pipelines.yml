@@ -6,21 +6,17 @@ trigger:
 variables:
   NODE_VERSION: '20.x'
   ALLURE_REPORT_DIR: 'allure-report'
+  vmImage: 'ubuntu-latest'
 
 stages:
 - stage: TestExecution
   displayName: Execute WDIO Tests
+  pool:
+    vmImage: $(vmImage)
 
   jobs:
     - job: RunTests
-
-      pool:
-        vmImage: ubuntu-latest
-
       steps:
-        - checkout: self
-          clean: true
-
         - task: NodeTool@0
           displayName: Install Node.js
           inputs:
@@ -29,14 +25,10 @@ stages:
         - script: npm ci
           displayName: Install Dependencies
 
-        - script: |
-            npx wdio run wdio.conf.js
+        - script: npx wdio run wdio.conf.js
           displayName: Run WDIO Tests
 
-        - script: |
-            npx allure generate allure-results \
-              --clean \
-              -o $(ALLURE_REPORT_DIR)
+        - script: npx allure generate allure-results --clean -o $(ALLURE_REPORT_DIR)
           displayName: Generate Allure Report
           condition: always()
 
@@ -48,46 +40,30 @@ stages:
             artifact: allure-report
 
 - stage: SendEmailNotification
-  displayName: "Sending email to user with allure report as attachment"
+  displayName: Send Allure Report via Email
+  pool:
+    vmImage: $(vmImage)
 
   jobs:
     - job: SendEmail
-
-      pool:
-        vmImage: ubuntu-latest
-
       steps:
-        - checkout: self
-          clean: true
-
         - task: DownloadPipelineArtifact@2
+          displayName: Download Allure Report
           inputs:
             artifact: allure-report
             path: $(Pipeline.Workspace)/download
 
-        - script: | 
+        - script: |
             set -e
-
             ZIP_PATH="$(Build.ArtifactStagingDirectory)/allure-report.zip"
             DOWNLOAD_DIR="$(Pipeline.Workspace)/download"
-
-            # The artifact is published as its contents, not as a directory
-            # So the report files are directly in the download path
             cd "$DOWNLOAD_DIR"
             
-            # Verify we have the expected allure report files
-            if [ ! -f "index.html" ]; then
-              echo "ERROR: index.html not found in $DOWNLOAD_DIR"
-              ls -la "$DOWNLOAD_DIR"
-              exit 1
-            fi
-
-            echo "Creating zip from allure report files..."
+            [ -f "index.html" ] || { echo "ERROR: index.html not found"; ls -la; exit 1; }
+            
             zip -r $ZIP_PATH .
-
-            echo "Encoding zip file for email attachment..."
             ENCODED=$(base64 "$ZIP_PATH" | tr -d '\n')
-
+            
             cat > /tmp/email-payload.json <<EOF
             {
               "from": "onboarding@resend.dev",
@@ -101,12 +77,11 @@ stages:
               }]
             }
             EOF
-
-            echo "Sending email with report attachment..."
+            
             curl -X POST "https://api.resend.com/emails" \
               -H "Authorization: Bearer $RESEND_EMAIL_API_KEY" \
               -H "Content-Type: application/json" \
               -d @/tmp/email-payload.json
-          displayName: "Send Allure Report via Resend"    
+          displayName: Create and Send Allure Report
           env:
             RESEND_EMAIL_API_KEY: $(RESEND_EMAIL_API_KEY)
